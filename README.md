@@ -2,7 +2,6 @@
 
 - [Bite-sized News Scraper](#bite-sized-news-scraper)
   - [Newspapers](#newspapers)
-  - [News.com.au | newscomau | ✅ | v1](#newscomau--newscomau----v1)
   - [Philosophy](#philosophy)
     - [Listing articles](#listing-articles)
     - [Getting an article's contents](#getting-an-articles-contents)
@@ -30,7 +29,6 @@ The goals of this project are:
 --- | --- | --- | ---
 The Age | theage | ✅ | v1
 News.com.au | newscomau | ✅ | v1
----
 
 
 ## Philosophy

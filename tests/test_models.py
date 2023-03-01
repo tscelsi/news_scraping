@@ -1,7 +1,7 @@
 import json
 import pytest
 from src.consts import TEST_DIR
-from src.theage.model import TheAgeArticle
+from src.scrapers.theage.model import TheAgeArticle
 
 @pytest.fixture
 def article():

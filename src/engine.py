@@ -40,7 +40,7 @@ class Engine:
                 max_at_once=self.config['globals']['max_at_once'],
                 max_per_second=self.config['globals']['max_per_second']
             )
-            articles = filter(lambda x: x is not None, articles)
+            articles = [x for x in filter(lambda x: x is not None, articles)]
         db_requests = [
             UpdateOne(
                 {'url': article.url, 'outlet': article.outlet},

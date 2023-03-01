@@ -1,6 +1,7 @@
+import sys
 from dotenv import load_dotenv
 load_dotenv()
-from consts import SRC_DIR, SCRAPER_DIR 
+from consts import ROOT_DIR, SCRAPER_DIR 
 import db
 from models import Article
 import aiometer
@@ -18,7 +19,11 @@ class Engine:
         self,
         config_path: str,
     ):
-        self.config = Config().from_disk(SRC_DIR / config_path)
+        try:
+            self.config = Config().from_disk(ROOT_DIR / config_path)
+        except FileNotFoundError:
+            print("Config file not found. The path should point from the root directory to the config file.")
+            sys.exit(1)
         # import module containing list_articles and get_article
         self._module = importlib.import_module(
             'scrapers.' + self.config['globals']['module'])
@@ -56,7 +61,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Run a bite-sized newspaper scraper.')
     parser.add_argument(
-        'config', type=str, help='Path to config file. Relative to the src directory.')
+        'config', type=str, help='Path to config file. Relative to the root directory.')
     args = parser.parse_args()
     engine = Engine(args.config)
     asyncio.run(engine.run())

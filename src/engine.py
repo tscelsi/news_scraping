@@ -35,9 +35,7 @@ class Engine:
 
     async def run(self):
         async with httpx.AsyncClient() as client:
-            list_articles = functools.partial(
-                self._list_articles, client, **self.config['lister_args'])
-            article_urls = await list_articles()  # this may raise, we want it to. We can't continue without it.
+            article_urls = await self._list_articles(client, **self.config['lister_args'])  # this may raise, we want it to. We can't continue without it.
             jobs = [functools.partial(self._get_article, client, url)
                     for url in article_urls]
             articles = await aiometer.run_all(

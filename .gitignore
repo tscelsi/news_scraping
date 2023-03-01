@@ -1,0 +1,21 @@
+.pyc
+__pycache__
+logs
+data_archive
+archive
+anon
+
+.pytest_cache
+.coverage
+coverage.xml
+pytest-report.html
+
+cache
+data/*
+
+.DS_Store
+
+# snyk
+.dccache
+*.gql
+.env

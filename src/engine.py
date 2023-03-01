@@ -25,20 +25,20 @@ class Engine:
             print("Config file not found. The path should point from the root directory to the config file.")
             sys.exit(1)
         # import module containing list_articles and get_article
-        self._module = importlib.import_module(
+        _module = importlib.import_module(
             'scrapers.' + self.config['globals']['module'])
         self._db = db.get_db()
-        self.list_articles_fn: Callable[[
-            httpx.AsyncClient, Any], Awaitable[list[str]]] = self._module.list_articles
-        self.get_article_fn: Callable[[
-            httpx.AsyncClient, str], Awaitable[Article]] = self._module.get_article
+        self._list_articles: Callable[[
+            httpx.AsyncClient, Any], Awaitable[list[str]]] = _module.list_articles
+        self._get_article: Callable[[
+            httpx.AsyncClient, str], Awaitable[Article]] = _module.get_article
 
     async def run(self):
         async with httpx.AsyncClient() as client:
-            lister = functools.partial(
-                self.list_articles_fn, client, **self.config['lister_args'])
-            article_urls = await lister()  # this may raise, we want it to. We can't continue without it.
-            jobs = [functools.partial(self.get_article_fn, client, url)
+            list_articles = functools.partial(
+                self._list_articles, client, **self.config['lister_args'])
+            article_urls = await list_articles()  # this may raise, we want it to. We can't continue without it.
+            jobs = [functools.partial(self._get_article, client, url)
                     for url in article_urls]
             articles = await aiometer.run_all(
                 jobs,
@@ -46,14 +46,14 @@ class Engine:
                 max_per_second=self.config['globals']['max_per_second']
             )
             articles = [x for x in filter(lambda x: x is not None, articles)]
-        db_requests = [
+        db_ops = [
             UpdateOne(
                 {'url': article.url, 'outlet': article.outlet},
                 {'$set': {**article.dict(), 'url': article.url}},
                 upsert=True
             ) for article in articles
         ]
-        self._db.articles.bulk_write(db_requests)
+        self._db.articles.bulk_write(db_ops)
         return articles
 
 

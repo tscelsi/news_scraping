@@ -30,7 +30,7 @@ The goals of this project are:
 The Age | theage | ✅ | v1
 News.com.au | newscomau | ✅ | v1
 The Guardian | guardian | ✅ | v1
-
+Australian Financial Review | afr | ✅ | v1
 
 ## Philosophy
 There are generally two broad steps needed to be taken when extracting news articles:

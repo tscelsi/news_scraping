@@ -5,8 +5,7 @@ from datetime import datetime
 import httpx
 from pydantic import ValidationError
 
-from .model import TheAgeArticle
-from models import Article
+from models import Article, NineEntArticle
 from requestor import Requestor
 from consts import HEADERS
 from exceptions import BaseException
@@ -70,7 +69,7 @@ async def list_articles(client: httpx.AsyncClient, path: str | list[str], page_l
 async def get_article(client: httpx.AsyncClient, url: str) -> Article:
     response = await client.get(url, headers=HEADERS)
     try:
-        article = TheAgeArticle(**response.json(), url=url)
+        article = NineEntArticle(**response.json(), url=url)
         tags = []
         for el in article.tags.values():
             if isinstance(el, list):

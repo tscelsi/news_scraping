@@ -32,7 +32,7 @@ News.com.au | newscomau | ✅ | v1
 The Guardian | guardian | ✅ | v1
 Australian Financial Review | afr | ✅ | v1
 ABC | abc | ⏱ | -
-BBC | bbc | ⏱ | -
+BBC | bbc | ✅ | -
 Al Jazeera | aljazeera | ⏱ | -
 
 ## Philosophy

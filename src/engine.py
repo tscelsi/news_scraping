@@ -1,7 +1,7 @@
 import sys
 from dotenv import load_dotenv
 load_dotenv()
-from consts import ROOT_DIR, SCRAPER_DIR 
+from consts import ROOT_DIR 
 import db
 from models import Article
 import aiometer

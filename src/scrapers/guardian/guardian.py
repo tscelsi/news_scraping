@@ -15,6 +15,8 @@ OUTLET = 'guardian'
 ARTICLE_BASE_HREF = 'https://www.theguardian.com/'
 
 
+## yes i know the guardian has an API, idc ##
+
 async def list_articles(client: httpx.AsyncClient, path: str) -> list[str]:
     res = await client.get(ARTICLE_BASE_HREF + path, headers=HEADERS)
     if res.status_code != 200:

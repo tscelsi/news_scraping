@@ -3,7 +3,7 @@ import sys
 from dotenv import load_dotenv
 load_dotenv()
 from consts import ROOT_DIR 
-import db
+from db import Db
 from models import Article
 import aiometer
 import httpx
@@ -22,6 +22,7 @@ class Engine:
     def __init__(
         self,
         config_path: str,
+        db_uri: str | None = None,
         debug: bool = False
     ):
         if debug:
@@ -35,7 +36,7 @@ class Engine:
         logger.debug(f'Importing module scrapers.{self.config["globals"]["module"]}')
         _module = importlib.import_module(
             'scrapers.' + self.config['globals']['module'])
-        self._db = db.get_db()
+        self._db = Db(db_uri)
         self._list_articles: Callable[[
             httpx.AsyncClient, Any], Awaitable[list[str]]] = _module.list_articles
         self._get_article: Callable[[
@@ -64,7 +65,7 @@ class Engine:
                 upsert=True
             ) for article in articles
         ]
-        write_result = self._db.articles.bulk_write(db_ops)
+        write_result = self._db.get_collection('articles').bulk_write(db_ops)
         logger.info(f'updated {write_result.modified_count} articles. inserted {write_result.upserted_count} articles.')
         logger.debug(write_result)
         return articles
@@ -72,12 +73,15 @@ class Engine:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Run a bite-sized newspaper scraper.')
+        description='Run a bite-sized news outlet scraper.')
     parser.add_argument(
-        'config', type=str, help='Path to config file. Relative to the root directory.')
+        'config', type=str, help='path to config file. This path should be relative to the root directory. For examples, see the templates/ folder.')
     parser.add_argument(
-        '--debug', action='store_true', help='Enable debug logging.'
+        '--db', dest='db_uri', help='a mongodb connection string.'
+    )
+    parser.add_argument(
+        '--debug', action='store_true', help='enable debug logging.'
     )
     args = parser.parse_args()
-    engine = Engine(args.config, args.debug)
+    engine = Engine(args.config, db_uri=args.db_uri, debug=args.debug)
     asyncio.run(engine.run())

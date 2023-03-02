@@ -10,6 +10,7 @@ from models import Article
 from requestor import Requestor
 from consts import HEADERS
 from exceptions import BaseException
+from utils import normalise_tags
 
 class Categories(Enum):
     businessmarkets = '/business/markets'
@@ -70,6 +71,15 @@ async def get_article(client: httpx.AsyncClient, url: str) -> Article:
     response = await client.get(url, headers=HEADERS)
     try:
         article = TheAgeArticle(**response.json(), url=url)
+        tags = []
+        for el in article.tags.values():
+            if isinstance(el, list):
+                tags.extend(el)
+                continue
+            tags.append(el)
+        tags = [tag['displayName'] for tag in tags]
+        tags.extend(article.categories)
+        normalised_tags = normalise_tags(*tags)
         standardised_article = Article(
             outlet=OUTLET,
             url=url,
@@ -79,6 +89,7 @@ async def get_article(client: httpx.AsyncClient, url: str) -> Article:
             title=article.asset.headlines.headline,
             body=article.asset.body,
             wordCount=article.asset.wordCount,
+            tags=normalised_tags,
         )
     except ValidationError as e:
         logger.error(f'get_article;{e};{url}')

@@ -8,7 +8,8 @@ from models import Article
 import aiometer
 import httpx
 from pymongo import UpdateOne
-from confection import Config
+import catalogue
+from confection import registry, Config
 import functools
 import asyncio
 from typing import Callable, Awaitable, Any
@@ -17,6 +18,15 @@ import argparse
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+registry.engines = catalogue.create('engine', 'engines', entry_points=True)
+
+@registry.engines.register('engine.v1')
+def _factory(module_config_path: str,
+        db_uri: str | None = None,
+        debug: bool = False):
+    return Engine(module_config_path, db_uri, debug)
+
 
 class Engine:
     def __init__(

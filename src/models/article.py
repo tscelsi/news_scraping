@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Literal, Any
 
 class Article(BaseModel):
-    outlet: Literal['theage', 'news.com.au']
+    outlet: Literal['theage', 'news.com.au', 'guardian']
     url: str # uuid
     created: str | datetime | None
     modified: str | datetime | None

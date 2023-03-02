@@ -7,12 +7,12 @@ import httpx
 
 from consts import HEADERS
 from models import Article
-
+from utils import normalise_tags
 
 logger = logging.getLogger(__name__)
 
-OUTLET = 'news.com.au'
-ARTICLE_BASE_HREF = 'https://www.news.com.au/'
+OUTLET = 'guardian'
+ARTICLE_BASE_HREF = 'https://www.theguardian.com/'
 
 
 async def list_articles(client: httpx.AsyncClient, path: str) -> list[str]:
@@ -21,8 +21,7 @@ async def list_articles(client: httpx.AsyncClient, path: str) -> list[str]:
         logger.error(f'list_articles;{res.status_code};{res.text}')
         raise BaseException(f'Failed to get {path} with status code {res.status_code}')
     soup = BeautifulSoup(res.text, 'html.parser')
-    articles = soup.findAll('article')
-    article_urls = [article.h4.a['href'] for article in articles]
+    article_urls = [x.a['href'] for x in soup.findAll('div', {'class': 'fc-item'})]
     return article_urls
 
 
@@ -32,9 +31,10 @@ async def get_article(client: httpx.AsyncClient, url: str) -> Article:
         logger.error(f'get_article;failed to get {url} with status code {response.status_code};{response.text}')
         return None
     soup = BeautifulSoup(response.text, 'html.parser')
-    metadata = json.loads(soup.find(type='application/ld+json').text)
+    metadata = json.loads(soup.find(type='application/ld+json').text)[0]
     title = soup.h1.text
-    body = soup.find(id='story-primary').text
+    body = soup.find('div', {'id': 'maincontent'}).text
+    tags = normalise_tags(*[x.text for x in soup.find('div', {'class': 'dcr-1nx1rmt'}).findAll('li')])
     try:
         article = Article(
             outlet=OUTLET,
@@ -45,6 +45,7 @@ async def get_article(client: httpx.AsyncClient, url: str) -> Article:
             title=title,
             body=body,
             wordCount=None,
+            tags=tags,
         )
     except ValidationError as e:
         logger.error(f'get_article;{e};{url}')

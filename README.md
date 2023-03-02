@@ -29,6 +29,7 @@ The goals of this project are:
 --- | --- | --- | ---
 The Age | theage | ✅ | v1
 News.com.au | newscomau | ✅ | v1
+The Guardian | guardian | ✅ | v1
 
 
 ## Philosophy

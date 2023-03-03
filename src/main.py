@@ -23,6 +23,7 @@ async def main() -> Awaitable[list[Article]]:
         except Exception as e:
             logger.error(f'Engine {engine} failed with error {e}')
     results = await aiometer.run_all([functools.partial(wrapper, engine) for engine in resolved.values()])
+    results = filter(None, results)
     return list(itertools.chain.from_iterable(results))
 
 if __name__ == "__main__":

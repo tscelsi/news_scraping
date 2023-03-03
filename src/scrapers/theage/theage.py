@@ -30,21 +30,15 @@ async def list_articles(client: httpx.AsyncClient, path: str | list[str], page_l
     """Because the pagination relies on synchronous requests, we simply add the delay between
     using our Requestor context.
     """
-    try:
-        _category = Categories[path]
-    except KeyError as e:
-        logger.error(f'list_articles;{path};{e}')
-        raise BaseException(
-            f'Categories should be one of {Categories.__members__.keys()}') from e
     url = 'https://api.theage.com.au/graphql'
     with Requestor(client=client, delay=delay) as R:
         r = await R.get(url, params={
             'query': 'query CategoryIndexPageAssetsQuery( $brand: String! $render: Render! $path: String! $first: Int! $offset: Int $types: [AssetType!]! ) { pageAssets: pageAssetsByNavigationPath(brand: $brand, render: $render, path: $path) { error { message type { __typename class ... on ErrorTypeInvalidRequest { fields { field message } } ... on ErrorTypeNotFound { class } ... on ErrorTypeUnavailable { retryable } } } page { ...PageFragment_pageData id } assetsConnection(first: $first, offset: $offset, types: $types) { ...AssetsConnectionFragment_showMoreData } } } fragment PageFragment_pageData on Page { config { ads { suppress } seo { canonical { brand path } description keywords title } } description id name redirect } fragment AssetsConnectionFragment_showMoreData on AssetsConnection { assets { ...AssetFragmentFragment_assetDataWithTag id } pageInfo { endCursor hasNextPage } } fragment AssetFragmentFragment_assetDataWithTag on Asset { ...AssetFragmentFragment_assetData tags { primaryTag { ...AssetFragment_tagFragment id } } } fragment AssetFragmentFragment_assetData on Asset { id asset { about byline duration headlines { headline } live totalImages } extensions label urls { canonical { path brand } external published { brisbanetimes { path } canberratimes { path } smh { path } theage { path } watoday { path } } } featuredImages { landscape16x9 { ...ImageFragment } landscape3x2 { ...ImageFragment } portrait2x3 { ...ImageFragment } square1x1 { ...ImageFragment } } assetType dates { modified published } sponsor { name } } fragment AssetFragment_tagFragment on AssetTagDetails { displayName urls { published { brisbanetimes { path } canberratimes { path } smh { path } theage { path } watoday { path } } } } fragment ImageFragment on Image { data { animated aspect autocrop cropWidth id mimeType offsetX offsetY zoom } }',
-            'variables': '{"brand": "%s","first": 11,"offset": 0,"path": "%s","render": "WEB","types": ["article", "bespoke", "collection", "featureArticle", "gallery", "liveArticle"]}' % (OUTLET, _category.value)
+            'variables': '{"brand": "%s","first": 11,"offset": 0,"path": "%s","render": "WEB","types": ["article", "bespoke", "collection", "featureArticle", "gallery", "liveArticle"]}' % (OUTLET, path)
         }, headers=HEADERS)
         if r.status_code != 200 or r.json()['data']['pageAssets']['error'] is not None:
             logger.error(f'list_articles;{r.status_code};{r.json()}')
-            raise BaseException(f'Error getting articles for {_category.value}')
+            raise BaseException(f'Error getting articles for {path}')
         main_data = r.json()['data']['pageAssets']['assetsConnection']
         article_urls = [ARTICLE_BASE_HREF + asset['id']
                         for asset in main_data['assets']]
@@ -58,7 +52,7 @@ async def list_articles(client: httpx.AsyncClient, path: str | list[str], page_l
             }, headers=HEADERS)
             if r.status_code != 200:
                 logger.error(f'list_articles;{r.status_code};{r.text}')
-                raise BaseException(f'Error paginating articles for {_category.value}')
+                raise BaseException(f'Error paginating articles for {path}')
             current_page_data = r.json()['data']['assetsConnection']
             article_urls.extend([ARTICLE_BASE_HREF + asset['id']
                                 for asset in current_page_data['assets']])

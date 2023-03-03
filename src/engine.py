@@ -42,8 +42,10 @@ class Engine:
         except FileNotFoundError:
             print("Config file not found. The path should point from the root directory to the config file.")
             sys.exit(1)
+        self._name = self.config['globals']['module']
+        logger.info(f'{self._name};initialising engine...')
         # import module containing list_articles and get_article
-        logger.debug(f'Importing module scrapers.{self.config["globals"]["module"]}')
+        logger.debug(f'{self._name};importing module scrapers.{self.config["globals"]["module"]}')
         _module = importlib.import_module(
             'scrapers.' + self.config['globals']['module'])
         self._db = Db(db_uri)
@@ -54,10 +56,10 @@ class Engine:
 
     async def run(self):
         async with httpx.AsyncClient() as client:
-            logger.info('Getting article urls...')
+            logger.info(f'{self._name};getting article urls...')
             article_urls = await self._list_articles(client, **self.config['lister_args'])  # this may raise, we want it to. We can't continue without it.
-            logger.info(f'Got {len(article_urls)} article urls. Beginning article text retrieval...')
-            logger.debug(article_urls)
+            logger.info(f'{self._name};got {len(article_urls)} article urls. Beginning article text retrieval...')
+            logger.debug(f'{self._name};{article_urls}')
             jobs = [functools.partial(self._get_article, client, url)
                     for url in article_urls]
             articles = await aiometer.run_all(
@@ -66,8 +68,8 @@ class Engine:
                 max_per_second=self.config['globals']['max_per_second']
             )
             articles = [x for x in filter(lambda x: x is not None, articles)]
-            logger.info(f'Found text for {len(articles)} articles. Updating in db...')
-            logger.debug(articles)
+            logger.info(f'{self._name};found text for {len(articles)} articles. Updating in db...')
+            logger.debug(f'{self._name};{articles}')
         db_ops = [
             UpdateOne(
                 {'url': article.url, 'outlet': article.outlet},
@@ -76,8 +78,8 @@ class Engine:
             ) for article in articles
         ]
         write_result = self._db.get_collection('articles').bulk_write(db_ops)
-        logger.info(f'updated {write_result.modified_count} articles. inserted {write_result.upserted_count} articles.')
-        logger.debug(write_result)
+        logger.info(f'{self._name};updated {write_result.modified_count} articles. inserted {write_result.upserted_count} articles.')
+        logger.debug(f'{self._name};{write_result}')
         return articles
 
 

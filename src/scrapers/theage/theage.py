@@ -26,6 +26,7 @@ OUTLET = 'theage'
 ARTICLE_BASE_HREF = 'https://api.theage.com.au/api/content/v0/assets/'
 
 
+# TODO: remove extra args except client, path
 async def list_articles(client: httpx.AsyncClient, path: str | list[str], page_limit: int = 1, delay: int = 0) -> list[str]:
     """Because the pagination relies on synchronous requests, we simply add the delay between
     using our Requestor context.

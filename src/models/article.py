@@ -4,7 +4,7 @@ from typing import Literal, Any
 
 class Article(BaseModel):
     outlet: Literal[
-        'theage',
+        # 'theage',
         'news.com.au',
         'guardian',
         'afr',

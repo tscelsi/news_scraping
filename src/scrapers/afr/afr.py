@@ -17,7 +17,7 @@ OUTLET = 'afr'
 ARTICLE_BASE_HREF = 'https://www.afr.com/'
 
 
-async def list_articles(client: httpx.AsyncClient, path: str | list[str]) -> list[str]:
+async def list_articles(client: httpx.AsyncClient, path: str) -> list[str]:
     res = await client.get(ARTICLE_BASE_HREF + path, headers=HEADERS)
     if res.status_code != 200:
         logger.error(f'list_articles;{res.status_code};{res.text}')

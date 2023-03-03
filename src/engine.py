@@ -1,75 +1,88 @@
+import argparse
+import importlib
+from typing import Callable, Awaitable, Any
+import asyncio
+import functools
+from confection import registry
+import catalogue
+from pymongo import UpdateOne
+import httpx
+import aiometer
+from models import Article
+from db import Db
 import logging
-import sys
 from dotenv import load_dotenv
 load_dotenv()
-from consts import ROOT_DIR 
-from db import Db
-from models import Article
-import aiometer
-import httpx
-from pymongo import UpdateOne
-import catalogue
-from confection import registry, Config
-import functools
-import asyncio
-from typing import Callable, Awaitable, Any
-import importlib
-import argparse
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-registry.engines = catalogue.create('engine', 'engines', entry_points=True)
+registry.engine = catalogue.create('engine', 'engines', entry_points=True)
 
-@registry.engines.register('engine.v1')
-def _factory(module_config_path: str,
-        db_uri: str | None = None,
-        debug: bool = False):
-    return Engine(module_config_path, db_uri, debug)
+
+@registry.engine.register('engine.v1')
+def _factory(module: str,
+             path: str,
+             max_at_once: int = 10,
+             max_per_second: int = 10,
+             db_uri: str | None = None,
+             db_must_connect: bool = False,
+             debug: bool = False):
+    return Engine(module,
+                  path,
+                  max_at_once=max_at_once,
+                  max_per_second=max_per_second,
+                  db_uri=db_uri,
+                  db_must_connect=db_must_connect,
+                  debug=debug)
 
 
 class Engine:
     def __init__(
         self,
-        config_path: str,
+        module_name: str,
+        url_suffix: str,
+        max_at_once: int = 10,
+        max_per_second: int = 10,
         db_uri: str | None = None,
         db_must_connect: bool = False,
-        debug: bool = False
+        debug: bool = False,
     ):
         if debug:
             logging.basicConfig(level=logging.DEBUG)
-        try:
-            self.config = Config().from_disk(ROOT_DIR / config_path)
-        except FileNotFoundError:
-            print("Config file not found. The path should point from the root directory to the config file.")
-            sys.exit(1)
-        self._name = self.config['globals']['module']
+        self._name = module_name
+        self.url_suffix = url_suffix
+        self.max_at_once = max_at_once
+        self.max_per_second = max_per_second
         logger.info(f'{self._name};initialising engine...')
         # import module containing list_articles and get_article
-        logger.debug(f'{self._name};importing module scrapers.{self.config["globals"]["module"]}')
+        logger.debug(f'{self._name};importing module scrapers.{self._name}')
         _module = importlib.import_module(
-            'scrapers.' + self.config['globals']['module'])
+            'scrapers.' + self._name)
         self._db = Db(db_uri, must_connect=db_must_connect)
         self._list_articles: Callable[[
             httpx.AsyncClient, Any], Awaitable[list[str]]] = _module.list_articles
         self._get_article: Callable[[
             httpx.AsyncClient, str], Awaitable[Article]] = _module.get_article
 
-    async def run(self):
+    async def run(self) -> Awaitable[list[Article]]:
         async with httpx.AsyncClient() as client:
             logger.info(f'{self._name};getting article urls...')
-            article_urls = await self._list_articles(client, **self.config['lister_args'])  # this may raise, we want it to. We can't continue without it.
-            logger.info(f'{self._name};got {len(article_urls)} article urls. Beginning article text retrieval...')
+            # this may raise, we want it to. We can't continue without it.
+            article_urls = await self._list_articles(client, self.url_suffix)
+            logger.info(
+                f'{self._name};got {len(article_urls)} article urls. Beginning article text retrieval...')
             logger.debug(f'{self._name};{article_urls}')
             jobs = [functools.partial(self._get_article, client, url)
                     for url in article_urls]
             articles = await aiometer.run_all(
                 jobs,
-                max_at_once=self.config['globals']['max_at_once'],
-                max_per_second=self.config['globals']['max_per_second']
+                max_at_once=self.max_at_once,
+                max_per_second=self.max_per_second,
             )
             articles = [x for x in filter(lambda x: x is not None, articles)]
-            logger.info(f'{self._name};found text for {len(articles)} articles. Updating in db...')
+            logger.info(
+                f'{self._name};found text for {len(articles)} articles. Updating in db...')
             logger.debug(f'{self._name};{articles}')
         if not self._db.empty:
             db_ops = [
@@ -79,8 +92,10 @@ class Engine:
                     upsert=True
                 ) for article in articles
             ]
-            write_result = self._db.get_collection('articles').bulk_write(db_ops)
-            logger.info(f'{self._name};updated {write_result.modified_count} articles. inserted {write_result.upserted_count} articles.')
+            write_result = self._db.get_collection(
+                'articles').bulk_write(db_ops)
+            logger.info(
+                f'{self._name};updated {write_result.modified_count} articles. inserted {write_result.upserted_count} articles.')
             logger.debug(f'{self._name};{write_result}')
         else:
             logger.info(f'{self._name};no db connection. skipping db update.')

@@ -3,7 +3,15 @@ from pydantic import BaseModel
 from typing import Literal, Any
 
 class Article(BaseModel):
-    outlet: Literal['theage', 'news.com.au', 'guardian', 'afr', 'bbc', 'aljazeera']
+    outlet: Literal[
+        'theage',
+        'news.com.au',
+        'guardian',
+        'afr',
+        'bbc',
+        'aljazeera',
+        'nytimes',
+    ]
     url: str # uuid
     created: str | datetime | None
     modified: str | datetime | None
@@ -13,3 +21,4 @@ class Article(BaseModel):
     wordCount: int | None
     tags: list[str] | None
     extra: Any
+    author: list[str] | None

@@ -43,4 +43,4 @@ def find_objects(soup: BeautifulSoup):
             objs.extend([obj for obj in find_json_objects(script_tag.text)])
         except:
             continue
-    return objs
+    return [x for x in objs if x != {}]

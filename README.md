@@ -27,13 +27,16 @@ The goals of this project are:
 
 **Newspaper** | **Module** | **Status** | **Version**
 --- | --- | --- | ---
+BBC | bbc | ✅ | v1
+The Guardian | guardian | ✅ | v1
+Al Jazeera | aljazeera | ✅ | v1
+The New York Times | nytimes | ✅ | v1
+**Australian News Outlets**
 The Age | theage | ✅ | v1
 News.com.au | newscomau | ✅ | v1
-The Guardian | guardian | ✅ | v1
 Australian Financial Review | afr | ✅ | v1
-ABC | abc | ⏱ | -
-BBC | bbc | ✅ | v1
-Al Jazeera | aljazeera | ⏱ | -
+ABC | abc | ❌ | -
+NPR | npr | ❌ | -
 
 ## Philosophy
 There are generally two broad steps needed to be taken when extracting news articles:

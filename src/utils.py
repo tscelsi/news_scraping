@@ -1,4 +1,6 @@
 import string
+from bs4 import BeautifulSoup
+import json
 
 
 def normalise_tag(tag: str):
@@ -16,3 +18,29 @@ def normalise_tag(tag: str):
 
 def normalise_tags(*tags: str):
     return [normalise_tag(tag) for tag in tags]
+
+## Some scraping tools
+def find_json_objects(text: str, decoder=json.JSONDecoder()):
+    """Find JSON objects in text, and generate decoded JSON data"""
+    pos = 0
+    while True:
+        match = text.find("{", pos)
+        if match == -1:
+            break
+        try:
+            result, index = decoder.raw_decode(text[match:])
+            yield result
+            pos = match + index
+        except ValueError:
+            pos = match + 1
+
+
+def find_objects(soup: BeautifulSoup):
+    """Find JSON objects in script tags"""
+    objs = []
+    for script_tag in soup.findAll('script'):
+        try:
+            objs.extend([obj for obj in find_json_objects(script_tag.text)])
+        except:
+            continue
+    return objs

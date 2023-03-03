@@ -33,6 +33,7 @@ class Engine:
         self,
         config_path: str,
         db_uri: str | None = None,
+        db_must_connect: bool = False,
         debug: bool = False
     ):
         if debug:
@@ -48,7 +49,7 @@ class Engine:
         logger.debug(f'{self._name};importing module scrapers.{self.config["globals"]["module"]}')
         _module = importlib.import_module(
             'scrapers.' + self.config['globals']['module'])
-        self._db = Db(db_uri)
+        self._db = Db(db_uri, must_connect=db_must_connect)
         self._list_articles: Callable[[
             httpx.AsyncClient, Any], Awaitable[list[str]]] = _module.list_articles
         self._get_article: Callable[[
@@ -70,16 +71,19 @@ class Engine:
             articles = [x for x in filter(lambda x: x is not None, articles)]
             logger.info(f'{self._name};found text for {len(articles)} articles. Updating in db...')
             logger.debug(f'{self._name};{articles}')
-        db_ops = [
-            UpdateOne(
-                {'url': article.url, 'outlet': article.outlet},
-                {'$set': {**article.dict(), 'url': article.url}},
-                upsert=True
-            ) for article in articles
-        ]
-        write_result = self._db.get_collection('articles').bulk_write(db_ops)
-        logger.info(f'{self._name};updated {write_result.modified_count} articles. inserted {write_result.upserted_count} articles.')
-        logger.debug(f'{self._name};{write_result}')
+        if not self._db.empty:
+            db_ops = [
+                UpdateOne(
+                    {'url': article.url, 'outlet': article.outlet},
+                    {'$set': {**article.dict(), 'url': article.url}},
+                    upsert=True
+                ) for article in articles
+            ]
+            write_result = self._db.get_collection('articles').bulk_write(db_ops)
+            logger.info(f'{self._name};updated {write_result.modified_count} articles. inserted {write_result.upserted_count} articles.')
+            logger.debug(f'{self._name};{write_result}')
+        else:
+            logger.info(f'{self._name};no db connection. skipping db update.')
         return articles
 
 

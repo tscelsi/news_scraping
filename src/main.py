@@ -14,18 +14,28 @@ import engine
 
 logger = logging.getLogger(__name__)
 
+
+class Runner:
+    @staticmethod
+    async def run(config: dict):
+        async def _wrapper(engine):
+            try:
+                articles = await engine.run()
+                return articles
+            except Exception as e:
+                logger.error(e)
+                logger.error(f'Engine {engine._name} failed with error {e}')
+        results = await aiometer.run_all([functools.partial(_wrapper, engine) for engine in config.values()])
+        results = filter(None, results)
+        return list(itertools.chain.from_iterable(results))
+
+
 async def main(config_path: str) -> Awaitable[list[Article]]:
     config = Config().from_disk(ROOT_DIR / config_path)
     resolved = registry.resolve(config)
-    async def _wrapper(engine):
-        try:
-            articles = await engine.run()
-            return articles
-        except Exception as e:
-            logger.error(f'Engine {engine._name} failed with error {e}')
-    results = await aiometer.run_all([functools.partial(_wrapper, engine) for engine in resolved.values()])
-    results = filter(None, results)
-    return list(itertools.chain.from_iterable(results))
+    results = await Runner.run(resolved)
+    return results
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

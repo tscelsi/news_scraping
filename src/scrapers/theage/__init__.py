@@ -1,3 +1,3 @@
-from .theage import list_articles, get_article, Categories
+from .theage import list_articles, get_article
 
-__all__ = ['list_articles', 'get_article', 'Categories']
+__all__ = ['list_articles', 'get_article']

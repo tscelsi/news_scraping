@@ -14,6 +14,7 @@ pytest-asyncio = "*"
 pymongo = "*"
 python-dotenv = "*"
 bs4 = "*"
+spacy = "*"
 
 [dev-packages]
 ipykernel = "*"

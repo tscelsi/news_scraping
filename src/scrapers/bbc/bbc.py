@@ -26,6 +26,9 @@ async def list_articles(client: httpx.AsyncClient, path: str) -> list[str]:
         atag = article_block.find('a')
         if atag:
             article_urls.append(atag['href'])
+    # featured contents
+    featured_section = soup.find('div', {'aria-label': 'Featured Contents'}).findAll('a', {'class': 'gs-c-promo-heading'})
+    article_urls.extend([a['href'] for a in featured_section])
     article_urls = [x for x in filter(lambda x: x.startswith('/news'), article_urls)]
     return article_urls
 

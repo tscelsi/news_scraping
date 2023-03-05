@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, validator
 from typing import Literal, Any
 
 class Article(BaseModel):
@@ -22,3 +22,14 @@ class Article(BaseModel):
     tags: list[str] | None
     extra: Any
     author: list[str] | None
+
+class DBArticle(Article):
+    id: str = Field(
+        description="Unique identifier of this strategy in the database",
+        alias="_id"
+    )
+
+    @validator('id', pre=True)
+    def _set_id(cls, v):
+        """potential ObjectId cast to string"""
+        return str(v)

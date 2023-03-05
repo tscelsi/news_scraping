@@ -54,7 +54,7 @@ async def run_from_list(config: list):
 async def main(config_path: str) -> Awaitable[list[Article]]:
     config = Config().from_disk(ROOT_DIR / config_path)
     resolved = registry.resolve(config)
-    results = await Runner.run(resolved)
+    results = await run_from_config(resolved)
     return results
 
 

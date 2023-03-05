@@ -27,7 +27,7 @@ async def list_articles(client: httpx.AsyncClient, path: str) -> list[str]:
     return article_urls
 
 
-async def get_article(client: httpx.AsyncClient, url: str) -> Article:
+async def get_article(client: httpx.AsyncClient, url: str, path: str) -> Article:
     response = await client.get(url, headers=HEADERS)
     if response.status_code != 200:
         logger.error(f'get_article;failed to get {url} with status code {response.status_code};{response.text}')
@@ -48,6 +48,8 @@ async def get_article(client: httpx.AsyncClient, url: str) -> Article:
             body=body,
             wordCount=None,
             tags=tags,
+            prefix=path,
+            _scrape_time=datetime.utcnow(),
         )
     except ValidationError as e:
         logger.error(f'get_article;{e};{url}')

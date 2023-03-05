@@ -73,7 +73,7 @@ class Engine:
             logger.info(
                 f'{self._name};got {len(article_urls)} article urls. Beginning article text retrieval...')
             logger.debug(f'{self._name};{article_urls}')
-            jobs = [functools.partial(self._get_article, client, url)
+            jobs = [functools.partial(self._get_article, client, url, self.url_suffix)
                     for url in article_urls]
             articles = await aiometer.run_all(
                 jobs,

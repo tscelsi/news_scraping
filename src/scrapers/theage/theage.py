@@ -35,7 +35,7 @@ async def list_articles(client: httpx.AsyncClient, path: str | list[str]) -> lis
     return article_urls
 
 
-async def get_article(client: httpx.AsyncClient, url: str) -> Article:
+async def get_article(client: httpx.AsyncClient, url: str, path: str) -> Article:
     response = await client.get(url, headers=HEADERS)
     try:
         article = NineEntArticle(**response.json(), url=url)
@@ -58,6 +58,8 @@ async def get_article(client: httpx.AsyncClient, url: str) -> Article:
             body=article.asset.body,
             wordCount=article.asset.wordCount,
             tags=normalised_tags,
+            prefix=path,
+            _scrape_time=datetime.utcnow(),
         )
     except ValidationError as e:
         logger.error(f'get_article;{e};{url}')

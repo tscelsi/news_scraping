@@ -17,6 +17,7 @@ bs4 = "*"
 spacy = "*"
 fastapi = "*"
 uvicorn = "*"
+scikit-learn = "*"
 
 [dev-packages]
 ipykernel = "*"

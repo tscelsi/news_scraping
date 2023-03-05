@@ -27,7 +27,7 @@ async def list_articles(client: httpx.AsyncClient, path: str) -> list[str]:
     return article_ids
 
 
-async def get_article(client: httpx.AsyncClient, url: str) -> Article:
+async def get_article(client: httpx.AsyncClient, url: str, path: str) -> Article:
     """In this case, the url is actually an article id which we pass to the API."""
     api_url = "https://api.afr.com/api/content/v0/assets/" + url
     response = await client.get(api_url, headers=HEADERS)
@@ -52,6 +52,8 @@ async def get_article(client: httpx.AsyncClient, url: str) -> Article:
             body=article.asset.body,
             wordCount=article.asset.wordCount,
             tags=normalised_tags,
+            prefix=path,
+            _scrape_time=datetime.utcnow(),
         )
     except ValidationError as e:
         logger.error(f'get_article;{e};{url}')

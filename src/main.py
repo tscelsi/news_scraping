@@ -1,9 +1,11 @@
+import sys
 from typing import Awaitable
 import argparse
 import asyncio
 import logging
 import functools
 import itertools
+import traceback
 
 from confection import registry, Config
 import aiometer
@@ -21,7 +23,7 @@ async def _wrapper(engine):
         articles = await engine.run()
         return articles
     except Exception as e:
-        logger.error(e)
+        logger.error(traceback.print_tb(e.__traceback__))
         logger.error(f'Engine {engine._name} failed with error {e}')
 
 

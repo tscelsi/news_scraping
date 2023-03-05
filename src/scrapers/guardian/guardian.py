@@ -33,10 +33,17 @@ async def get_article(client: httpx.AsyncClient, url: str, path: str) -> Article
         logger.error(f'get_article;failed to get {url} with status code {response.status_code};{response.text}')
         return None
     soup = BeautifulSoup(response.text, 'html.parser')
-    metadata = json.loads(soup.find(type='application/ld+json').text)[0]
+    print(url)
+    metadata = json.loads(soup.find(type='application/ld+json').text)
+    if isinstance(metadata, list):
+        metadata = metadata[0]
     title = soup.h1.text
     body = soup.find('div', {'id': 'maincontent'}).text
-    tags = normalise_tags(*[x.text for x in soup.find('div', {'class': 'dcr-1nx1rmt'}).findAll('li')])
+    tag_div = soup.find('div', {'class': 'dcr-1nx1rmt'})
+    if tag_div is None or body is None or body == '':
+        logger.error(f'get_article;failed to get article body or tags;{url};{body};{tag_div}')
+        return None
+    tags = normalise_tags(*[x.text for x in tag_div.findAll('li')])
     try:
         article = Article(
             outlet=OUTLET,

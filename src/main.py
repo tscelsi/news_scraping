@@ -15,19 +15,40 @@ import engine
 logger = logging.getLogger(__name__)
 
 
-class Runner:
-    @staticmethod
-    async def run(config: dict):
-        async def _wrapper(engine):
-            try:
-                articles = await engine.run()
-                return articles
-            except Exception as e:
-                logger.error(e)
-                logger.error(f'Engine {engine._name} failed with error {e}')
-        results = await aiometer.run_all([functools.partial(_wrapper, engine) for engine in config.values()])
-        results = filter(None, results)
-        return list(itertools.chain.from_iterable(results))
+
+async def _wrapper(engine):
+    try:
+        articles = await engine.run()
+        return articles
+    except Exception as e:
+        logger.error(e)
+        logger.error(f'Engine {engine._name} failed with error {e}')
+
+
+async def run_from_config(config: dict):    
+    results = await aiometer.run_all([functools.partial(_wrapper, engine) for engine in config.values()])
+    results = filter(None, results)
+    return list(itertools.chain.from_iterable(results))
+
+
+async def run_from_list(config: list):
+    """From list of config dicts.
+    [{
+        module: "bbc",
+        path: "news/science-environment-56837908",
+        max_at_once: 4,
+        max_per_second: 4,
+        db_uri: null,
+        db_must_connect: false,
+        debug: false,
+    },
+    ...,
+    ]
+    """
+    engines = [engine._factory(**engine_config) for engine_config in config]
+    results = await aiometer.run_all([functools.partial(_wrapper, engine) for engine in engines])
+    results = filter(None, results)
+    return list(itertools.chain.from_iterable(results))
 
 
 async def main(config_path: str) -> Awaitable[list[Article]]:

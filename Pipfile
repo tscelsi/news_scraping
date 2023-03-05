@@ -15,10 +15,13 @@ pymongo = "*"
 python-dotenv = "*"
 bs4 = "*"
 spacy = "*"
+fastapi = "*"
+uvicorn = "*"
 
 [dev-packages]
 ipykernel = "*"
 autopep8 = "*"
+build = "*"
 
 [requires]
 python_version = "3.9"

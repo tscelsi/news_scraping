@@ -7,7 +7,6 @@ import httpx
 
 from consts import HEADERS
 from models import Article
-from utils import normalise_tags
 from .model import AlJazeeraArticle
 
 logger = logging.getLogger(__name__)

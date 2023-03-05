@@ -54,6 +54,6 @@ async def get_article(client: httpx.AsyncClient, url: str, path: str) -> Article
         wordCount=None,
         tags=tags,
         prefix=path,
-        _scrape_time=datetime.utcnow(),
+        scrape_time=datetime.utcnow(),
     )
     return standardised_article

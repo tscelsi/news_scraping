@@ -34,7 +34,7 @@ Al Jazeera | aljazeera | ✅ | v1
 The New York Times | nytimes | ✅ | v1
 NPR | npr | ❌ | -
 **Australian News Outlets**
-The Age | theage | ⏱ | v1
+The Age | theage | ✅ | v1
 News.com.au | newscomau | ✅ | v1
 Australian Financial Review | afr | ✅ | v1
 ABC | abc | ❌ | -

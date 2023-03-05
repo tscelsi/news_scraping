@@ -48,7 +48,7 @@ async def get_article(client: httpx.AsyncClient, url: str, path: str) -> Article
             wordCount=None,
             tags=tags,
             prefix=path,
-            _scrape_time=datetime.utcnow(),
+            scrape_time=datetime.utcnow(),
         )
     except ValidationError as e:
         logger.error(f'get_article;{e};{url}')

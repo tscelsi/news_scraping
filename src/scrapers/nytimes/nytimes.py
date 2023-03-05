@@ -47,7 +47,7 @@ async def get_article(client: httpx.AsyncClient, url: str, path: str) -> Article
     title = article.h1.text
     content_section = article.find('section', {'name': 'articleBody'})
     body = ' '.join([x.text for x in content_section.findAll('p', {'class': 'css-at9mc1 evys1bk0'})])
-    author = [x['name'] for x in metadata['author']]
+    author = [x['name'] for x in metadata['author']] if isinstance(metadata['author'], list) else metadata['author']['name']
     published = metadata['datePublished']
     modified = metadata['dateModified']
     try:
@@ -62,7 +62,7 @@ async def get_article(client: httpx.AsyncClient, url: str, path: str) -> Article
             wordCount=None,
             author=author,
             prefix=path,
-            _scrape_time=datetime.utcnow(),
+            scrape_time=datetime.utcnow(),
         )
     except ValidationError as e:
         logger.error(f'get_article;{e};{url}')

@@ -4,7 +4,7 @@ from typing import Literal, Any
 
 class Article(BaseModel):
     outlet: Literal[
-        # 'theage',
+        'theage',
         'news.com.au',
         'guardian',
         'afr',
@@ -23,7 +23,7 @@ class Article(BaseModel):
     tags: list[str] | None = Field(description="Descriptive tags summarising the topics of the article")
     extra: Any | None = Field(description="Any extra data that may be useful")
     author: list[str] | None = Field(description="The author(s) of the article")
-    _scrape_time: datetime = Field(description="The time the article was last scraped")
+    scrape_time: datetime = Field(description="The time the article was last scraped")
 
 class DBArticle(Article):
     id: str = Field(

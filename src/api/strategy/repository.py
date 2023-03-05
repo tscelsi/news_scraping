@@ -28,7 +28,7 @@ class StrategyRepository:
     @staticmethod
     def create(strategy: Strategy) -> DBStrategy:
         result = _db.strategies.insert_one(strategy.dict())
-        return DBStrategy(**result)
+        return DBStrategy(**{'_id': result.inserted_id, **strategy.dict()})
 
     @staticmethod
     def read(id: str) -> DBStrategy:

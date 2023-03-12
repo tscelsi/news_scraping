@@ -59,8 +59,8 @@ async def get_article(client: httpx.AsyncClient, url: str, path: str) -> Article
             published=datetime.strptime(published, '%Y-%m-%dT%H:%M:%S.%fZ'),
             title=title,
             body=body,
-            wordCount=None,
             author=author,
+            tags=[],
             prefix=path,
             scrape_time=datetime.utcnow(),
         )

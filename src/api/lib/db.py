@@ -4,7 +4,7 @@ from pymongo import MongoClient
 import pymongo.errors as errors
 from pymongo.collection import Collection
 from bson import ObjectId
-from models import Strategy
+from models import Feed
 
 class MockDeleteResult:
     deleted_count = 1
@@ -25,14 +25,14 @@ class MockCollection:
         return {**model.dict(), '_id': _id or ObjectId()}
     def insert_one(self, *args, **kwargs):
         _obj = args[0]
-        return {**Strategy(**_obj).dict(), '_id': ObjectId()}
+        return {**Feed(**_obj).dict(), '_id': ObjectId()}
     def delete_one(self, *args, **kwargs):
         return MockDeleteResult()
 
 
 class MockDatabase:
     def __init__(self):
-        self.strategies = MockCollection(Strategy)
+        self.strategies = MockCollection(Feed)
 
 class MockClient:
     def __init__(self, uri: str):
@@ -72,3 +72,11 @@ class Db:
     @property
     def strategies(self) -> Collection:
         return client.news.strategies
+    
+    @property
+    def feed(self) -> Collection:
+        return client.news.Feed
+
+    @property
+    def feedoutlet(self) -> Collection:
+        return client.news.FeedOutlet

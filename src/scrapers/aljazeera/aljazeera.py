@@ -46,12 +46,12 @@ async def get_article(client: httpx.AsyncClient, url: str, path: str) -> Article
     standardised_article = Article(
         outlet=OUTLET,
         url=url,
+        author=[],
         created=datetime.fromisoformat(article.date),
         modified=datetime.fromisoformat(article.modified_gmt),
         published=datetime.fromisoformat(article.date),
         title=article.title,
         body=article.content,
-        wordCount=None,
         tags=tags,
         prefix=path,
         scrape_time=datetime.utcnow(),

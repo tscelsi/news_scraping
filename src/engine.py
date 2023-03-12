@@ -41,7 +41,7 @@ class Engine:
     def __init__(
         self,
         module_name: str,
-        url_suffix: str,
+        prefix: str,
         max_at_once: int = 10,
         max_per_second: int = 10,
         db_uri: str | None = None,
@@ -51,7 +51,7 @@ class Engine:
         if debug:
             logging.basicConfig(level=logging.DEBUG)
         self._name = module_name
-        self.url_suffix = url_suffix
+        self.prefix = prefix
         self.max_at_once = max_at_once
         self.max_per_second = max_per_second
         logger.info(f'{self._name};initialising engine...')
@@ -69,11 +69,11 @@ class Engine:
         async with httpx.AsyncClient() as client:
             logger.info(f'{self._name};getting article urls...')
             # this may raise, we want it to. We can't continue without it.
-            article_urls = await self._list_articles(client, self.url_suffix)
+            article_urls = await self._list_articles(client, self.prefix)
             logger.info(
                 f'{self._name};got {len(article_urls)} article urls. Beginning article text retrieval...')
             logger.debug(f'{self._name};{article_urls}')
-            jobs = [functools.partial(self._get_article, client, url, self.url_suffix)
+            jobs = [functools.partial(self._get_article, client, url, self.prefix)
                     for url in article_urls]
             articles = await aiometer.run_all(
                 jobs,
@@ -93,7 +93,7 @@ class Engine:
                 ) for article in articles
             ]
             write_result = self._db.get_collection(
-                'articles').bulk_write(db_ops)
+                'Article').bulk_write(db_ops)
             logger.info(
                 f'{self._name};updated {write_result.modified_count} articles. inserted {write_result.upserted_count} articles.')
             logger.debug(f'{self._name};{write_result}')

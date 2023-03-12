@@ -20,9 +20,9 @@ class Article(BaseModel):
     title: str | None = Field(description="The title of the article")
     body: str | None = Field(description="The text content of the article")
     wordCount: int | None = Field(description="The number of words in the article")
-    tags: list[str] | None = Field(description="Descriptive tags summarising the topics of the article")
+    tags: list[str] = Field(description="Descriptive tags summarising the topics of the article")
     extra: Any | None = Field(description="Any extra data that may be useful")
-    author: list[str] | None = Field(description="The author(s) of the article")
+    author: list[str] = Field(description="The author(s) of the article")
     scrape_time: datetime = Field(description="The time the article was last scraped")
 
 class DBArticle(Article):

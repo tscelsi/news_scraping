@@ -47,13 +47,13 @@ async def get_article(client: httpx.AsyncClient, url: str, path: str) -> Article
     try:
         article = Article(
             outlet=OUTLET,
+            author=[],
             url=url,
             created=datetime.strptime(metadata['datePublished'], '%Y-%m-%dT%H:%M:%S.%fZ'),
             modified=datetime.strptime(metadata['dateModified'], '%Y-%m-%dT%H:%M:%S.%fZ'),
             published=datetime.strptime(metadata['datePublished'], '%Y-%m-%dT%H:%M:%S.%fZ'),
             title=title,
             body=body,
-            wordCount=None,
             tags=tags,
             prefix=path,
             scrape_time=datetime.utcnow(),

@@ -52,17 +52,17 @@ async def get_article(client: httpx.AsyncClient, url: str, path: str) -> Article
     title = soup.h1.text
     body = ' '.join([x.text for x in soup.article.findAll('div', {'data-component': 'text-block'})])
     tag_div = soup.article.find('div', {'data-component': 'topic-list'})
-    tags = normalise_tags(*[x.text for x in tag_div.findAll('li')]) if tag_div else None
+    tags = normalise_tags(*[x.text for x in tag_div.findAll('li')]) if tag_div else []
     try:
         article = Article(
             outlet=OUTLET,
+            author=[],
             url=url,
             created=created,
             modified=modified,
             published=published,
             title=title,
             body=body,
-            wordCount=None,
             tags=tags,
             prefix=path,
             scrape_time=datetime.utcnow(),

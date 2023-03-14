@@ -14,7 +14,6 @@ import logging
 from dotenv import load_dotenv
 load_dotenv()
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 registry.engine = catalogue.create('engine', 'engines', entry_points=True)
